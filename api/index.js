@@ -1,10 +1,15 @@
 const express = require('express');
 const { spawn } = require('child_process');
+const path = require('path');
 const cors = require('cors');
 
 const app = express();
 app.use(cors());
 
+// Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, '../public')));
+
+// API route for downloading
 app.get('/download', (req, res) => {
   const videoURL = req.query.url;
   const type = req.query.type || 'video';
@@ -16,8 +21,11 @@ app.get('/download', (req, res) => {
   const format = type === 'audio' ? 'bestaudio' : 'bestvideo';
 
   try {
+    // Path to yt-dlp executable
+    const ytDlpPath = path.join(__dirname, 'yt-dlp');
+
     // Spawn yt-dlp to download the video/audio
-    const ytProcess = spawn('yt-dlp', ['-f', format, '-o', '-', videoURL]);
+    const ytProcess = spawn(ytDlpPath, ['-f', format, '-o', '-', videoURL]);
 
     // Set headers for file download
     const contentType = type === 'audio' ? 'audio/mpeg' : 'video/mp4';
@@ -51,5 +59,5 @@ app.get('/download', (req, res) => {
   }
 });
 
-const PORT = 3000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+// Export app for deployment
+module.exports = app;
