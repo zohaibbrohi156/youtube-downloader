@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple YouTube Downloader</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* General Styles */
+    :root {
+      --bg-light: #f8f9fa;
+      --bg-dark: #212529;
+      --text-light: #212529;
+      --text-dark: #f8f9fa;
+      --card-light: #ffffff;
+      --card-dark: #343a40;
+      --button-light: #495057;
+      --button-dark: #ffffff;
+      --button-hover-light: #343a40;
+      --button-hover-dark: #f8f9fa;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+    }
+
+    /* Dark Mode Button */
+    .dark-mode-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: var(--button-light);
+      color: var(--text-dark);
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
+    }
+
+    .dark-mode-btn:hover {
+      background: var(--button-hover-light);
+      color: var(--text-light);
+      transform: scale(1.05);
+    }
+
+    /* Form Section */
+    .download-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      max-width: 500px;
+      background: var(--card-light);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .download-form input,
+    .download-form select,
+    .download-form button {
+      padding: 12px;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      font-size: 1rem;
+      width: 100%;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .download-form input {
+      background: var(--card-light);
+      color: var(--text-light);
+    }
+
+    .download-form input:focus,
+    .download-form select:focus {
+      border-color: var(--button-light);
+      box-shadow: 0 0 8px rgba(73, 80, 87, 0.3);
+    }
+
+    .download-form select {
+      background: var(--card-light);
+      color: var(--text-light);
+      cursor: pointer;
+    }
+
+    .download-form button {
+      background: var(--button-light);
+      color: var(--text-dark);
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    .download-form button:hover {
+      background: var(--button-hover-light);
+      transform: scale(1.03);
+    }
+
+    /* Loading Animation */
+    .loading-container {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .loading-animation {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #dee2e6;
+      border-top: 4px solid var(--button-light);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      margin-top: 15px;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    /* Dark Mode Overrides */
+    .dark-mode {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .dark-mode .download-form {
+      background: var(--card-dark);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    }
+
+    .dark-mode .download-form input,
+    .dark-mode .download-form select {
+      background: var(--card-dark);
+      color: var(--text-dark);
+    }
+
+    .dark-mode .download-form button {
+      background: var(--button-dark);
+      color: var(--text-light);
+    }
+
+    .dark-mode .dark-mode-btn {
+      background: var(--button-dark);
+      color: var(--text-light);
+    }
+
+    .dark-mode .dark-mode-btn:hover {
+      background: var(--button-hover-dark);
+      color: var(--text-dark);
+    }
+  </style>
+</head>
+<body>
+  <!-- Dark Mode Button -->
+  <button class="dark-mode-btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+
+  <!-- Main Content -->
+  <h1>ZA Fast YouTube Downloader</h1>
+  <p>Paste a YouTube video link below to download it in MP3 or MP4 format.</p>
+
+  <!-- Download Form -->
+  <div class="download-form">
+    <input type="text" id="videoURL" placeholder="Enter YouTube video URL">
+    <select id="format">
+      <option value="mp4">MP4 (Video)</option>
+      <option value="mp3">MP3 (Audio)</option>
+    </select>
+    <button onclick="startDownload()">Download</button>
+  </div>
+
+  <!-- Loading Animation -->
+  <div class="loading-container" id="loading-container">
+    <div class="loading-animation"></div>
+    <div class="loading-text">Downloading... Please wait.</div>
+  </div>
+
+  <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    async function startDownload() {
+      const videoURL = document.getElementById('videoURL').value;
+      const format = document.getElementById('format').value;
+
+      if (!videoURL) {
+        alert('Please enter a valid YouTube URL.');
+        return;
+      }
+
+      const loadingContainer = document.getElementById('loading-container');
+      loadingContainer.style.display = 'block';
+
+      try {
+        const response = await fetch(`http://localhost:3000/download?url=${encodeURIComponent(videoURL)}&type=${format}`);
+        if (!response.ok) {
+          throw new Error('Download failed!');
+        }
+
+        const blob = await response.blob();
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = `download.${format === 'mp4' ? 'mp4' : 'mp3'}`;
+        downloadLink.click();
+
+        alert('Download completed successfully!');
+      } catch (error) {
+        alert('An error occurred during the download process.');
+        console.error(error);
+      } finally {
+        loadingContainer.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
